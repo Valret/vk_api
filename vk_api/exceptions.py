@@ -6,7 +6,6 @@
 :copyright: (c) 2019 python273
 """
 
-
 TWOFACTOR_CODE = -2
 HTTP_ERROR_CODE = -1
 TOO_MANY_RPS_CODE = 6
@@ -148,10 +147,14 @@ class Captcha(VkApiError):
 
         if key:
             self.key = key
-
             self.kwargs.update({
-                'captcha_sid': self.sid,
                 'captcha_key': self.key
+            })
+
+        if sid:
+            self.sid = sid
+            self.kwargs.update({
+                'captcha_sid': self.sid
             })
 
         return self.func(*self.args, **self.kwargs)
@@ -178,3 +181,50 @@ class VkRequestsPoolException(Exception):
     def __init__(self, error, *args, **kwargs):
         self.error = error
         super(VkRequestsPoolException, self).__init__(*args, **kwargs)
+
+
+class Need_Validation(Captcha):
+
+    def __init__(self, vk, func, args=None, kwargs=None, response=None):
+        super(Need_Validation, self).__init__(vk, 0, func, args, kwargs)
+        self.code = NEED_VALIDATION_CODE
+        self.response = response
+
+    def get_redirect_uri(self):
+        """ Получить ссылку на необходимую проверку """
+
+        if self.response and self.response['redirect_uri']:
+            return self.response['redirect_uri']
+
+        return None
+
+    def get_url(self, sid=None):
+        """ Получить ссылку на изображение капчи """
+        if sid:
+            self.sid = sid
+        if not self.url:
+            self.url = 'https://api.vk.com/captcha.php?sid={}'.format(self.sid)
+
+        return self.url
+
+    def try_again(self, key, sid=None):
+        """ Отправить запрос заново с ответом капчи
+
+        :param key: ответ капчи
+        """
+        if key:
+            self.key = key
+            self.kwargs.update({
+                'captcha_key': self.key
+            })
+
+        if sid:
+            self.sid = sid
+            self.kwargs.update({
+                'captcha_sid': self.sid
+            })
+
+        return self.func(*self.args, **self.kwargs)
+
+    def __str__(self):
+        return 'Need_Validation needed'
