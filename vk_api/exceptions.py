@@ -139,7 +139,7 @@ class Captcha(VkApiError):
 
         return self.image
 
-    def try_again(self, key=None):
+    def try_again(self, key=None, sid=None):
         """ Отправить запрос заново с ответом капчи
 
         :param key: ответ капчи
@@ -207,7 +207,7 @@ class Need_Validation(Captcha):
 
         return self.url
 
-    def try_again(self, key, sid=None):
+    def try_again(self, key=None, sid=None):
         """ Отправить запрос заново с ответом капчи
 
         :param key: ответ капчи
